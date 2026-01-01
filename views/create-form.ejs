@@ -38,7 +38,7 @@
       font-weight: 600;
       color: #333;
     }
-    input[type="text"], textarea {
+    input[type="text"], textarea, select {
       width: 100%;
       padding: 12px;
       border: 2px solid #e0e0e0;
@@ -46,7 +46,7 @@
       font-size: 1em;
       font-family: 'Noto Sans TC', sans-serif;
     }
-    input:focus, textarea:focus {
+    input:focus, textarea:focus, select:focus {
       outline: none;
       border-color: #667eea;
     }
@@ -67,6 +67,15 @@
       margin-bottom: 20px;
       position: relative;
     }
+    .section-card.learning-focus {
+      border-left: 4px solid #28a745;
+    }
+    .section-card.sentence-analysis {
+      border-left: 4px solid #007bff;
+    }
+    .section-card.picture-completion {
+      border-left: 4px solid #ffc107;
+    }
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -78,6 +87,12 @@
       color: #333;
       font-size: 1.1em;
     }
+    .section-description {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 5px;
+      font-style: italic;
+    }
     .btn-remove {
       background: #dc3545;
       color: white;
@@ -87,15 +102,57 @@
       cursor: pointer;
       font-size: 0.9em;
     }
-    .btn-add-section {
-      background: #28a745;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
+    .btn-remove:hover {
+      background: #c82333;
+    }
+    .add-section-panel {
+      background: #fff;
+      border: 2px dashed #667eea;
+      border-radius: 8px;
+      padding: 20px;
       margin-bottom: 20px;
+      text-align: center;
+    }
+    .section-type-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .section-type-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .section-type-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .section-type-card.learning-focus {
+      border-color: #28a745;
+    }
+    .section-type-card.sentence-analysis {
+      border-color: #007bff;
+    }
+    .section-type-card.picture-completion {
+      border-color: #ffc107;
+    }
+    .section-type-icon {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    .section-type-name {
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    .section-type-desc {
+      font-size: 0.85em;
+      color: #666;
     }
     .btn-group {
       display: flex;
@@ -163,6 +220,9 @@
       font-size: 0.9em;
       margin-top: 10px;
     }
+    .btn-add-point:hover, .btn-add-question:hover {
+      background: #138496;
+    }
     .btn-remove-small {
       background: #dc3545;
       color: white;
@@ -172,13 +232,22 @@
       cursor: pointer;
       font-size: 0.8em;
     }
-    .section-type-select {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 1em;
+    .help-box {
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      padding: 12px;
+      border-radius: 4px;
       margin-bottom: 15px;
+      font-size: 0.9em;
+      color: #004085;
+    }
+    .section-info {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 0.9em;
+      color: #495057;
     }
   </style>
 </head>
@@ -189,11 +258,12 @@
     <form id="worksheetForm">
       <input type="hidden" name="id" value="<%= worksheet ? worksheet.id : '' %>">
       
+      <!-- Basic Information -->
       <div class="form-group">
         <label for="title">Worksheet Title *</label>
         <input type="text" id="title" name="title" required 
                value="<%= worksheet ? worksheet.title : '' %>"
-               placeholder="e.g., Unit 4: Narrative Elements">
+               placeholder="e.g., Unit 4: Narrative Elements (記敍四要素)">
       </div>
 
       <div class="form-group">
@@ -229,10 +299,46 @@
         </div>
       </div>
 
+      <!-- Sections -->
       <div class="form-group">
-        <label>Worksheet Sections</label>
-        <button type="button" class="btn-add-section" onclick="addSection()">+ Add Section</button>
+        <label>Worksheet Content Sections</label>
+        <div class="help-box">
+          <strong>💡 Tip:</strong> Add sections to build your worksheet. Each section serves a specific purpose in the educational content.
+        </div>
+        
         <div id="sectionsContainer"></div>
+
+        <!-- Add Section Panel -->
+        <div class="add-section-panel" id="addSectionPanel">
+          <strong>➕ Add New Section</strong>
+          <p style="color: #666; margin: 10px 0;">Choose a section type to add:</p>
+          <div class="section-type-selector">
+            <div class="section-type-card learning-focus" onclick="addSection('learning-focus')">
+              <div class="section-type-icon">📚</div>
+              <div class="section-type-name">Learning Focus</div>
+              <div class="section-type-desc">學習重點</div>
+              <div class="section-type-desc" style="margin-top: 5px; font-size: 0.8em;">
+                Use this to highlight key learning points, rules, or concepts in a grey highlighted box
+              </div>
+            </div>
+            <div class="section-type-card sentence-analysis" onclick="addSection('sentence-analysis')">
+              <div class="section-type-icon">✍️</div>
+              <div class="section-type-name">Sentence Analysis</div>
+              <div class="section-type-desc">句子辨析</div>
+              <div class="section-type-desc" style="margin-top: 5px; font-size: 0.8em;">
+                Use this for exercises where students analyze sentences and identify Time, Place, Person, Event (四要素)
+              </div>
+            </div>
+            <div class="section-type-card picture-completion" onclick="addSection('picture-completion')">
+              <div class="section-type-icon">🖼️</div>
+              <div class="section-type-name">Picture Completion</div>
+              <div class="section-type-desc">看圖完句</div>
+              <div class="section-type-desc" style="margin-top: 5px; font-size: 0.8em;">
+                Use this for exercises where students complete sentences based on picture hints
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="btn-group">
@@ -246,57 +352,57 @@
     let sectionCounter = 0;
     const sections = [];
 
-    // Section templates
-    function addSection() {
-      const type = prompt('Select section type:\n1. Learning Focus\n2. Sentence Analysis\n3. Picture Completion\n\nEnter 1, 2, or 3:');
-      
-      if (!type) return;
-      
-      let sectionType;
-      if (type === '1') sectionType = 'learning-focus';
-      else if (type === '2') sectionType = 'sentence-analysis';
-      else if (type === '3') sectionType = 'picture-completion';
-      else {
-        alert('Invalid selection');
-        return;
-      }
-
+    function addSection(type) {
       const sectionId = sectionCounter++;
-      sections.push({ id: sectionId, type: sectionType, data: {} });
-      renderSection(sectionId, sectionType);
+      sections.push({ id: sectionId, type: type, data: {} });
+      renderSection(sectionId, type);
     }
 
     function renderSection(id, type) {
       const container = document.getElementById('sectionsContainer');
       const sectionDiv = document.createElement('div');
-      sectionDiv.className = 'section-card';
+      sectionDiv.className = `section-card ${type}`;
       sectionDiv.id = `section-${id}`;
 
       if (type === 'learning-focus') {
         sectionDiv.innerHTML = `
           <div class="section-header">
-            <div class="section-title">Learning Focus Section</div>
+            <div>
+              <div class="section-title">📚 Learning Focus Section (學習重點)</div>
+              <div class="section-description">Highlight key learning points, rules, or concepts that students need to remember</div>
+            </div>
             <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="section-info">
+            <strong>Purpose:</strong> This section creates a grey highlighted box to emphasize important learning concepts. Perfect for rules, definitions, or key points.
           </div>
           <div class="form-group">
             <label>Section Title</label>
             <input type="text" class="section-title-input" placeholder="e.g., 4 記敍四要素" onchange="updateSection(${id}, 'title', this.value)">
           </div>
           <div class="form-group">
-            <label>Learning Points</label>
+            <label>Learning Points (Add multiple points)</label>
+            <div class="help-box">Each point will appear as a bullet point in the learning box</div>
             <div id="points-${id}"></div>
-            <button type="button" class="btn-add-point" onclick="addPoint(${id})">+ Add Point</button>
+            <button type="button" class="btn-add-point" onclick="addPoint(${id})">+ Add Learning Point</button>
           </div>
           <div class="form-group">
             <label>Example (Optional)</label>
-            <textarea class="section-example-input" placeholder="e.g., 例子:今天,我吃了一件蛋糕。" onchange="updateSection(${id}, 'example', this.value)"></textarea>
+            <textarea class="section-example-input" placeholder="e.g., 例子:今天,我吃了一件蛋糕。(句子中只有時間、人物和事情,並沒有地點。)" onchange="updateSection(${id}, 'example', this.value)"></textarea>
+            <small style="color: #666;">This example will appear below the learning points</small>
           </div>
         `;
       } else if (type === 'sentence-analysis') {
         sectionDiv.innerHTML = `
           <div class="section-header">
-            <div class="section-title">Sentence Analysis Section</div>
+            <div>
+              <div class="section-title">✍️ Sentence Analysis Section (句子辨析)</div>
+              <div class="section-description">Students analyze sentences and identify the four narrative elements: Time (時), Place (地), Person (人), Event (事)</div>
+            </div>
             <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="section-info">
+            <strong>Purpose:</strong> This section creates exercises where students read sentences and fill in a 2x2 grid identifying Time, Place, Person, and Event. Perfect for teaching narrative structure.
           </div>
           <div class="form-group">
             <label>Section Title</label>
@@ -304,10 +410,12 @@
           </div>
           <div class="form-group">
             <label>Instructions</label>
-            <textarea class="section-instructions-input" placeholder="e.g., 根據下列各句,在橫線上填上適當的記敍四要素" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+            <textarea class="section-instructions-input" placeholder="e.g., 根據下列各句,在橫線上填上適當的記敍四要素,沒有提及的填×。" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+            <small style="color: #666;">Instructions that appear above the questions</small>
           </div>
           <div class="form-group">
             <label>Questions</label>
+            <div class="help-box">Each question requires: (1) A sentence to analyze, (2) Answers for Time, Place, Person, and Event</div>
             <div id="questions-${id}"></div>
             <button type="button" class="btn-add-question" onclick="addQuestion(${id})">+ Add Question</button>
           </div>
@@ -315,8 +423,14 @@
       } else if (type === 'picture-completion') {
         sectionDiv.innerHTML = `
           <div class="section-header">
-            <div class="section-title">Picture Completion Section</div>
+            <div>
+              <div class="section-title">🖼️ Picture Completion Section (看圖完句)</div>
+              <div class="section-description">Students complete sentences based on picture hints using Time, Place, Person, and Event</div>
+            </div>
             <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="section-info">
+            <strong>Purpose:</strong> This section creates exercises where students see hints (Time, Place, Person, Event) and write a complete sentence. Perfect for sentence construction practice.
           </div>
           <div class="form-group">
             <label>Section Title</label>
@@ -324,10 +438,12 @@
           </div>
           <div class="form-group">
             <label>Instructions</label>
-            <textarea class="section-instructions-input" placeholder="e.g., 根據圖意和括號內的提示,寫作句子" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+            <textarea class="section-instructions-input" placeholder="e.g., 根據圖意和括號內的提示,寫作句子。(答案只供參考)" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+            <small style="color: #666;">Instructions that appear above the questions</small>
           </div>
           <div class="form-group">
             <label>Questions</label>
+            <div class="help-box">Each question requires: (1) Hints for Time, Place, Person, Event, (2) A complete sentence as the answer</div>
             <div id="picture-questions-${id}"></div>
             <button type="button" class="btn-add-question" onclick="addPictureQuestion(${id})">+ Add Question</button>
           </div>
@@ -351,7 +467,7 @@
       pointDiv.className = 'point-item';
       const pointId = Date.now();
       pointDiv.innerHTML = `
-        <input type="text" placeholder="Enter learning point" onchange="updatePoint(${id}, ${pointId}, this.value)">
+        <input type="text" placeholder="Enter a learning point (e.g., 注意:記敘四要素不一定會全部出現於同一個句子內。)" onchange="updatePoint(${id}, ${pointId}, this.value)">
         <button type="button" class="btn-remove-small" onclick="removePoint(${id}, ${pointId})">Remove</button>
       `;
       pointDiv.id = `point-${pointId}`;
@@ -387,29 +503,33 @@
       const questionId = Date.now();
       questionDiv.innerHTML = `
         <div class="question-header">
-          <strong>Question</strong>
+          <strong>Question ${container.children.length + 1}</strong>
           <button type="button" class="btn-remove-small" onclick="removeQuestion(${id}, ${questionId})">Remove</button>
         </div>
         <div class="form-group">
-          <label>Sentence</label>
+          <label>Sentence to Analyze</label>
           <input type="text" placeholder="e.g., 今天,哥哥到日本旅行了。" onchange="updateQuestion(${id}, ${questionId}, 'sentence', this.value)">
+          <small style="color: #666;">Enter the sentence that students will analyze</small>
         </div>
-        <div class="grid-4">
-          <div>
-            <label>Time (時)</label>
-            <input type="text" placeholder="今天" onchange="updateQuestion(${id}, ${questionId}, 'time', this.value)">
-          </div>
-          <div>
-            <label>Place (地)</label>
-            <input type="text" placeholder="日本" onchange="updateQuestion(${id}, ${questionId}, 'place', this.value)">
-          </div>
-          <div>
-            <label>Person (人)</label>
-            <input type="text" placeholder="哥哥" onchange="updateQuestion(${id}, ${questionId}, 'person', this.value)">
-          </div>
-          <div>
-            <label>Event (事)</label>
-            <input type="text" placeholder="旅行" onchange="updateQuestion(${id}, ${questionId}, 'event', this.value)">
+        <div class="form-group">
+          <label>Answers (Fill in the four elements)</label>
+          <div class="grid-4">
+            <div>
+              <label style="font-size: 0.9em;">Time (時)</label>
+              <input type="text" placeholder="今天" onchange="updateQuestion(${id}, ${questionId}, 'time', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Place (地)</label>
+              <input type="text" placeholder="日本 (or × if not mentioned)" onchange="updateQuestion(${id}, ${questionId}, 'place', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Person (人)</label>
+              <input type="text" placeholder="哥哥" onchange="updateQuestion(${id}, ${questionId}, 'person', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Event (事)</label>
+              <input type="text" placeholder="旅行" onchange="updateQuestion(${id}, ${questionId}, 'event', this.value)">
+            </div>
           </div>
         </div>
       `;
@@ -451,30 +571,35 @@
       const questionId = Date.now();
       questionDiv.innerHTML = `
         <div class="question-header">
-          <strong>Question</strong>
+          <strong>Question ${container.children.length + 1}</strong>
           <button type="button" class="btn-remove-small" onclick="removePictureQuestion(${id}, ${questionId})">Remove</button>
         </div>
-        <div class="grid-2">
-          <div>
-            <label>Time (時間)</label>
-            <input type="text" placeholder="今天" onchange="updatePictureQuestion(${id}, ${questionId}, 'time', this.value)">
+        <div class="form-group">
+          <label>Hints (Fill in the four elements as hints)</label>
+          <div class="grid-2">
+            <div>
+              <label style="font-size: 0.9em;">Time Hint (時間)</label>
+              <input type="text" placeholder="今天" onchange="updatePictureQuestion(${id}, ${questionId}, 'time', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Person Hint (人物)</label>
+              <input type="text" placeholder="我和家人" onchange="updatePictureQuestion(${id}, ${questionId}, 'person', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Place Hint (地點)</label>
+              <input type="text" placeholder="到郊野公園" onchange="updatePictureQuestion(${id}, ${questionId}, 'place', this.value)">
+            </div>
+            <div>
+              <label style="font-size: 0.9em;">Event Hint (事情)</label>
+              <input type="text" placeholder="燒烤" onchange="updatePictureQuestion(${id}, ${questionId}, 'event', this.value)">
+            </div>
           </div>
-          <div>
-            <label>Person (人物)</label>
-            <input type="text" placeholder="我和家人" onchange="updatePictureQuestion(${id}, ${questionId}, 'person', this.value)">
-          </div>
-          <div>
-            <label>Place (地點)</label>
-            <input type="text" placeholder="到郊野公園" onchange="updatePictureQuestion(${id}, ${questionId}, 'place', this.value)">
-          </div>
-          <div>
-            <label>Event (事情)</label>
-            <input type="text" placeholder="燒烤" onchange="updatePictureQuestion(${id}, ${questionId}, 'event', this.value)">
-          </div>
+          <small style="color: #666;">These hints will be displayed to help students construct the sentence</small>
         </div>
-        <div class="form-group" style="margin-top: 10px;">
-          <label>Complete Sentence</label>
+        <div class="form-group">
+          <label>Complete Sentence (Answer)</label>
           <input type="text" placeholder="今天,我和家人到郊野公園燒烤。" onchange="updatePictureQuestion(${id}, ${questionId}, 'sentence', this.value)">
+          <small style="color: #666;">The complete sentence that students should write</small>
         </div>
       `;
       questionDiv.id = `picture-question-${questionId}`;
@@ -536,7 +661,7 @@
         };
 
         if (section.type === 'learning-focus') {
-          formatted.points = (section.data.points || []).map(p => p.value).filter(p => p);
+          formatted.points = (section.data.points || []).map(p => p.value).filter(p => p));
           formatted.example = section.data.example || '';
         } else if (section.type === 'sentence-analysis') {
           formatted.questions = (section.data.questions || []).map(q => ({
@@ -594,4 +719,3 @@
   </script>
 </body>
 </html>
-
