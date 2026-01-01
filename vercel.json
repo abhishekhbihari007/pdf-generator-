@@ -13,7 +13,8 @@
     }
   ],
   "env": {
-    "SKIP_PUPPETEER_DOWNLOAD": "1"
+    "SKIP_PUPPETEER_DOWNLOAD": "1",
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "1"
   }
 }
 
