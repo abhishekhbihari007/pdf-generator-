@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= worksheet ? 'Edit' : 'Create' %> Worksheet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1em;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .header-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+    }
+    .section-card {
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-weight: 700;
+      color: #333;
+      font-size: 1.1em;
+    }
+    .btn-remove {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .btn-add-section {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .question-item {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+    }
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .point-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .point-item input {
+      flex: 1;
+    }
+    .btn-add-point, .btn-add-question {
+      background: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-top: 10px;
+    }
+    .btn-remove-small {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+    .section-type-select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1em;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><%= worksheet ? 'Edit' : 'Create' %> Worksheet</h1>
+    
+    <form id="worksheetForm">
+      <input type="hidden" name="id" value="<%= worksheet ? worksheet.id : '' %>">
+      
+      <div class="form-group">
+        <label for="title">Worksheet Title *</label>
+        <input type="text" id="title" name="title" required 
+               value="<%= worksheet ? worksheet.title : '' %>"
+               placeholder="e.g., Unit 4: Narrative Elements">
+      </div>
+
+      <div class="form-group">
+        <label>Header Information</label>
+        <div class="header-fields">
+          <div>
+            <label for="schoolName">School Name</label>
+            <input type="text" id="schoolName" name="schoolName" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).schoolName : worksheet.header_info.schoolName) : '聖公會基顯小學' %>">
+          </div>
+          <div>
+            <label for="className">Class Name</label>
+            <input type="text" id="className" name="className" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).className : worksheet.header_info.className) : '1B' %>">
+          </div>
+          <div>
+            <label for="worksheetId">Worksheet ID</label>
+            <input type="text" id="worksheetId" name="worksheetId" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).worksheetId : worksheet.header_info.worksheetId) : '3a' %>">
+          </div>
+        </div>
+        <div class="header-fields" style="margin-top: 15px;">
+          <div>
+            <label for="date">Date</label>
+            <input type="text" id="date" name="date" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).date : worksheet.header_info.date) : '' %>">
+          </div>
+          <div>
+            <label for="score">Score</label>
+            <input type="text" id="score" name="score" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).score : worksheet.header_info.score) : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Worksheet Sections</label>
+        <button type="button" class="btn-add-section" onclick="addSection()">+ Add Section</button>
+        <div id="sectionsContainer"></div>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">Save Worksheet</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let sectionCounter = 0;
+    const sections = [];
+
+    // Section templates
+    function addSection() {
+      const type = prompt('Select section type:\n1. Learning Focus\n2. Sentence Analysis\n3. Picture Completion\n\nEnter 1, 2, or 3:');
+      
+      if (!type) return;
+      
+      let sectionType;
+      if (type === '1') sectionType = 'learning-focus';
+      else if (type === '2') sectionType = 'sentence-analysis';
+      else if (type === '3') sectionType = 'picture-completion';
+      else {
+        alert('Invalid selection');
+        return;
+      }
+
+      const sectionId = sectionCounter++;
+      sections.push({ id: sectionId, type: sectionType, data: {} });
+      renderSection(sectionId, sectionType);
+    }
+
+    function renderSection(id, type) {
+      const container = document.getElementById('sectionsContainer');
+      const sectionDiv = document.createElement('div');
+      sectionDiv.className = 'section-card';
+      sectionDiv.id = `section-${id}`;
+
+      if (type === 'learning-focus') {
+        sectionDiv.innerHTML = `
+          <div class="section-header">
+            <div class="section-title">Learning Focus Section</div>
+            <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="form-group">
+            <label>Section Title</label>
+            <input type="text" class="section-title-input" placeholder="e.g., 4 記敍四要素" onchange="updateSection(${id}, 'title', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Learning Points</label>
+            <div id="points-${id}"></div>
+            <button type="button" class="btn-add-point" onclick="addPoint(${id})">+ Add Point</button>
+          </div>
+          <div class="form-group">
+            <label>Example (Optional)</label>
+            <textarea class="section-example-input" placeholder="e.g., 例子:今天,我吃了一件蛋糕。" onchange="updateSection(${id}, 'example', this.value)"></textarea>
+          </div>
+        `;
+      } else if (type === 'sentence-analysis') {
+        sectionDiv.innerHTML = `
+          <div class="section-header">
+            <div class="section-title">Sentence Analysis Section</div>
+            <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="form-group">
+            <label>Section Title</label>
+            <input type="text" class="section-title-input" placeholder="e.g., III. 句子辨析" onchange="updateSection(${id}, 'title', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Instructions</label>
+            <textarea class="section-instructions-input" placeholder="e.g., 根據下列各句,在橫線上填上適當的記敍四要素" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Questions</label>
+            <div id="questions-${id}"></div>
+            <button type="button" class="btn-add-question" onclick="addQuestion(${id})">+ Add Question</button>
+          </div>
+        `;
+      } else if (type === 'picture-completion') {
+        sectionDiv.innerHTML = `
+          <div class="section-header">
+            <div class="section-title">Picture Completion Section</div>
+            <button type="button" class="btn-remove" onclick="removeSection(${id})">Remove</button>
+          </div>
+          <div class="form-group">
+            <label>Section Title</label>
+            <input type="text" class="section-title-input" placeholder="e.g., IV. 看圖完句" onchange="updateSection(${id}, 'title', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Instructions</label>
+            <textarea class="section-instructions-input" placeholder="e.g., 根據圖意和括號內的提示,寫作句子" onchange="updateSection(${id}, 'instructions', this.value)"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Questions</label>
+            <div id="picture-questions-${id}"></div>
+            <button type="button" class="btn-add-question" onclick="addPictureQuestion(${id})">+ Add Question</button>
+          </div>
+        `;
+      }
+
+      container.appendChild(sectionDiv);
+    }
+
+    function updateSection(id, field, value) {
+      const section = sections.find(s => s.id === id);
+      if (section) {
+        if (!section.data) section.data = {};
+        section.data[field] = value;
+      }
+    }
+
+    function addPoint(id) {
+      const container = document.getElementById(`points-${id}`);
+      const pointDiv = document.createElement('div');
+      pointDiv.className = 'point-item';
+      const pointId = Date.now();
+      pointDiv.innerHTML = `
+        <input type="text" placeholder="Enter learning point" onchange="updatePoint(${id}, ${pointId}, this.value)">
+        <button type="button" class="btn-remove-small" onclick="removePoint(${id}, ${pointId})">Remove</button>
+      `;
+      pointDiv.id = `point-${pointId}`;
+      container.appendChild(pointDiv);
+    }
+
+    function updatePoint(sectionId, pointId, value) {
+      const section = sections.find(s => s.id === sectionId);
+      if (section) {
+        if (!section.data.points) section.data.points = [];
+        const existing = section.data.points.find(p => p.id === pointId);
+        if (existing) {
+          existing.value = value;
+        } else {
+          section.data.points.push({ id: pointId, value });
+        }
+      }
+    }
+
+    function removePoint(sectionId, pointId) {
+      const pointEl = document.getElementById(`point-${pointId}`);
+      if (pointEl) pointEl.remove();
+      const section = sections.find(s => s.id === sectionId);
+      if (section && section.data.points) {
+        section.data.points = section.data.points.filter(p => p.id !== pointId);
+      }
+    }
+
+    function addQuestion(id) {
+      const container = document.getElementById(`questions-${id}`);
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question-item';
+      const questionId = Date.now();
+      questionDiv.innerHTML = `
+        <div class="question-header">
+          <strong>Question</strong>
+          <button type="button" class="btn-remove-small" onclick="removeQuestion(${id}, ${questionId})">Remove</button>
+        </div>
+        <div class="form-group">
+          <label>Sentence</label>
+          <input type="text" placeholder="e.g., 今天,哥哥到日本旅行了。" onchange="updateQuestion(${id}, ${questionId}, 'sentence', this.value)">
+        </div>
+        <div class="grid-4">
+          <div>
+            <label>Time (時)</label>
+            <input type="text" placeholder="今天" onchange="updateQuestion(${id}, ${questionId}, 'time', this.value)">
+          </div>
+          <div>
+            <label>Place (地)</label>
+            <input type="text" placeholder="日本" onchange="updateQuestion(${id}, ${questionId}, 'place', this.value)">
+          </div>
+          <div>
+            <label>Person (人)</label>
+            <input type="text" placeholder="哥哥" onchange="updateQuestion(${id}, ${questionId}, 'person', this.value)">
+          </div>
+          <div>
+            <label>Event (事)</label>
+            <input type="text" placeholder="旅行" onchange="updateQuestion(${id}, ${questionId}, 'event', this.value)">
+          </div>
+        </div>
+      `;
+      questionDiv.id = `question-${questionId}`;
+      container.appendChild(questionDiv);
+    }
+
+    function updateQuestion(sectionId, questionId, field, value) {
+      const section = sections.find(s => s.id === sectionId);
+      if (section) {
+        if (!section.data.questions) section.data.questions = [];
+        let question = section.data.questions.find(q => q.id === questionId);
+        if (!question) {
+          question = { id: questionId, answers: {} };
+          section.data.questions.push(question);
+        }
+        if (field === 'sentence') {
+          question.sentence = value;
+        } else {
+          if (!question.answers) question.answers = {};
+          question.answers[field] = value;
+        }
+      }
+    }
+
+    function removeQuestion(sectionId, questionId) {
+      const questionEl = document.getElementById(`question-${questionId}`);
+      if (questionEl) questionEl.remove();
+      const section = sections.find(s => s.id === sectionId);
+      if (section && section.data.questions) {
+        section.data.questions = section.data.questions.filter(q => q.id !== questionId);
+      }
+    }
+
+    function addPictureQuestion(id) {
+      const container = document.getElementById(`picture-questions-${id}`);
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question-item';
+      const questionId = Date.now();
+      questionDiv.innerHTML = `
+        <div class="question-header">
+          <strong>Question</strong>
+          <button type="button" class="btn-remove-small" onclick="removePictureQuestion(${id}, ${questionId})">Remove</button>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label>Time (時間)</label>
+            <input type="text" placeholder="今天" onchange="updatePictureQuestion(${id}, ${questionId}, 'time', this.value)">
+          </div>
+          <div>
+            <label>Person (人物)</label>
+            <input type="text" placeholder="我和家人" onchange="updatePictureQuestion(${id}, ${questionId}, 'person', this.value)">
+          </div>
+          <div>
+            <label>Place (地點)</label>
+            <input type="text" placeholder="到郊野公園" onchange="updatePictureQuestion(${id}, ${questionId}, 'place', this.value)">
+          </div>
+          <div>
+            <label>Event (事情)</label>
+            <input type="text" placeholder="燒烤" onchange="updatePictureQuestion(${id}, ${questionId}, 'event', this.value)">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label>Complete Sentence</label>
+          <input type="text" placeholder="今天,我和家人到郊野公園燒烤。" onchange="updatePictureQuestion(${id}, ${questionId}, 'sentence', this.value)">
+        </div>
+      `;
+      questionDiv.id = `picture-question-${questionId}`;
+      container.appendChild(questionDiv);
+    }
+
+    function updatePictureQuestion(sectionId, questionId, field, value) {
+      const section = sections.find(s => s.id === sectionId);
+      if (section) {
+        if (!section.data.questions) section.data.questions = [];
+        let question = section.data.questions.find(q => q.id === questionId);
+        if (!question) {
+          question = { id: questionId, hints: {} };
+          section.data.questions.push(question);
+        }
+        if (field === 'sentence') {
+          question.completeSentence = value;
+        } else {
+          if (!question.hints) question.hints = {};
+          question.hints[field] = value;
+        }
+      }
+    }
+
+    function removePictureQuestion(sectionId, questionId) {
+      const questionEl = document.getElementById(`picture-question-${questionId}`);
+      if (questionEl) questionEl.remove();
+      const section = sections.find(s => s.id === sectionId);
+      if (section && section.data.questions) {
+        section.data.questions = section.data.questions.filter(q => q.id !== questionId);
+      }
+    }
+
+    function removeSection(id) {
+      const sectionEl = document.getElementById(`section-${id}`);
+      if (sectionEl) sectionEl.remove();
+      const index = sections.findIndex(s => s.id === id);
+      if (index > -1) sections.splice(index, 1);
+    }
+
+    // Form submission
+    document.getElementById('worksheetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const headerInfo = {
+        schoolName: document.getElementById('schoolName').value,
+        className: document.getElementById('className').value,
+        worksheetId: document.getElementById('worksheetId').value,
+        date: document.getElementById('date').value,
+        score: document.getElementById('score').value
+      };
+
+      // Convert sections to proper format
+      const formattedSections = sections.map(section => {
+        const formatted = {
+          type: section.type,
+          title: section.data.title || '',
+          instructions: section.data.instructions || ''
+        };
+
+        if (section.type === 'learning-focus') {
+          formatted.points = (section.data.points || []).map(p => p.value).filter(p => p);
+          formatted.example = section.data.example || '';
+        } else if (section.type === 'sentence-analysis') {
+          formatted.questions = (section.data.questions || []).map(q => ({
+            sentence: q.sentence || '',
+            answers: {
+              time: q.answers?.time || '',
+              place: q.answers?.place || '',
+              person: q.answers?.person || '',
+              event: q.answers?.event || ''
+            }
+          })).filter(q => q.sentence);
+        } else if (section.type === 'picture-completion') {
+          formatted.questions = (section.data.questions || []).map(q => ({
+            hints: {
+              time: q.hints?.time || '',
+              person: q.hints?.person || '',
+              place: q.hints?.place || '',
+              event: q.hints?.event || ''
+            },
+            completeSentence: q.completeSentence || ''
+          })).filter(q => q.completeSentence);
+        }
+
+        return formatted;
+      }).filter(s => s.type);
+
+      const data = {
+        id: document.querySelector('input[name="id"]').value || null,
+        title: document.getElementById('title').value,
+        header_info: headerInfo,
+        sections: formattedSections
+      };
+
+      try {
+        const response = await fetch('/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('Worksheet saved successfully!');
+          window.location.href = '/';
+        } else {
+          alert('Error saving worksheet: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving worksheet');
+      }
+    });
+  </script>
+</body>
+</html>
+

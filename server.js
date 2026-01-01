@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
 const path = require('path');
 const db = require('./database');
+const HTMLGenerator = require('./server/utils/htmlGenerator.js');
 require('dotenv').config();
 
 const app = express();
@@ -40,7 +41,7 @@ app.get('/', async (req, res) => {
  * GET /create - Show worksheet editor
  */
 app.get('/create', (req, res) => {
-  res.render('create', { worksheet: null });
+  res.render('create-form', { worksheet: null });
 });
 
 /**
@@ -63,7 +64,7 @@ app.get('/edit/:id', async (req, res) => {
       }
     }
     
-    res.render('create', { 
+    res.render('create-form', { 
       worksheet: {
         ...worksheet,
         header_info: headerInfo
@@ -80,19 +81,29 @@ app.get('/edit/:id', async (req, res) => {
  */
 app.post('/save', async (req, res) => {
   try {
-    const { id, title, header_info, html_content } = req.body;
+    const { id, title, header_info, html_content, sections } = req.body;
     
-    if (!title || !html_content) {
-      return res.status(400).json({ error: 'Title and HTML content are required' });
+    if (!title) {
+      return res.status(400).json({ error: 'Title is required' });
+    }
+
+    // Generate HTML from sections if provided, otherwise use html_content
+    let finalHtmlContent = html_content;
+    if (sections && sections.length > 0) {
+      finalHtmlContent = HTMLGenerator.generateHTML(sections);
+    }
+    
+    if (!finalHtmlContent) {
+      return res.status(400).json({ error: 'Content is required. Please add at least one section.' });
     }
 
     let result;
     if (id) {
       // Update existing
-      result = await db.updateWorksheet(id, title, header_info, html_content);
+      result = await db.updateWorksheet(id, title, header_info, finalHtmlContent);
     } else {
       // Create new
-      result = await db.createWorksheet(title, header_info, html_content);
+      result = await db.createWorksheet(title, header_info, finalHtmlContent);
     }
 
     res.json({ success: true, worksheet: result });
