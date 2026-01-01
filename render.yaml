@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: worksheet-generator
+    env: node
+    buildCommand: npm install && SKIP_PUPPETEER_DOWNLOAD=true npm install puppeteer
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SKIP_PUPPETEER_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
+
