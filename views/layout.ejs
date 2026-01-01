@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'Worksheet' %></title>
+  
+  <!-- Google Fonts - Noto Sans TC (Traditional Chinese) - CRITICAL for Chinese character rendering -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Paged.js for A4 layout compliance -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pagedjs@0.4.0/dist/paged.polyfill.css">
+  <script src="https://cdn.jsdelivr.net/npm/pagedjs@0.4.0/dist/paged.polyfill.js"></script>
+  
+  <style>
+    /* Paged.js A4 Page Setup */
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+      font-size: 14pt;
+      line-height: 1.6;
+      color: #000;
+      background: #fff;
+    }
+
+    /* Header Styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #000;
+    }
+
+    .header-left {
+      flex: 1;
+    }
+
+    .header-title {
+      font-size: 16pt;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .header-meta {
+      font-size: 12pt;
+      margin-top: 8px;
+    }
+
+    .header-right {
+      text-align: right;
+      font-size: 12pt;
+    }
+
+    /* Learning Focus Box - Grey highlight box */
+    .learning-focus {
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      border-left: 4px solid #333;
+      page-break-inside: avoid;
+    }
+
+    .learning-focus h3 {
+      font-size: 15pt;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #000;
+    }
+
+    .learning-focus ul {
+      margin-left: 20px;
+      margin-top: 8px;
+    }
+
+    .learning-focus li {
+      margin-bottom: 5px;
+    }
+
+    .learning-focus .example {
+      margin-top: 10px;
+      font-style: italic;
+      color: #333;
+      padding: 8px;
+      background: #fff;
+      border-radius: 4px;
+    }
+
+    /* Exercise Grid - 2x2 grid for Time/Place/Person/Event */
+    .exercise-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 15px 0;
+      page-break-inside: avoid;
+    }
+
+    .exercise-grid-item {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .exercise-grid-label {
+      min-width: 60px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+
+    .fill-in-blank {
+      border-bottom: 1.5px solid #000;
+      min-width: 150px;
+      padding-bottom: 2px;
+      display: inline-block;
+    }
+
+    /* Section Styles */
+    .section {
+      margin-bottom: 25px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 15pt;
+      font-weight: 700;
+      margin-bottom: 12px;
+      margin-top: 15px;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+
+    .question-number {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14pt;
+    }
+
+    .question-text {
+      margin-bottom: 10px;
+    }
+
+    /* Answer Lines (Alternative to grid) */
+    .answer-lines {
+      margin-left: 20px;
+      margin-top: 10px;
+    }
+
+    .answer-line {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .answer-label {
+      min-width: 50px;
+      font-weight: 500;
+    }
+
+    /* Image Container */
+    .image-container {
+      margin: 15px 0;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    /* Hint Structure */
+    .hint-structure {
+      margin: 12px 0;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px dashed #999;
+      border-radius: 4px;
+    }
+
+    .hint-item {
+      margin: 6px 0;
+    }
+
+    .complete-sentence {
+      margin-top: 12px;
+      font-weight: 600;
+      color: #000;
+      padding: 10px;
+      background: #fff;
+      border: 1.5px solid #000;
+      border-radius: 4px;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 30px;
+      padding-top: 15px;
+      border-top: 1px solid #000;
+      font-size: 10pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-left {
+      text-align: left;
+    }
+
+    .footer-right {
+      text-align: right;
+      font-size: 9pt;
+    }
+
+    .page-number {
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .copyright {
+      font-size: 8pt;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">
+        <%= headerInfo?.schoolName || '學校名稱' %>_<%= headerInfo?.className || '班級' %>_<%= headerInfo?.worksheetId || '編號' %>
+      </div>
+      <div class="header-meta">
+        日期 <span class="fill-in-blank"><%= headerInfo?.date || '' %></span>  成績 <span class="fill-in-blank"><%= headerInfo?.score || '' %></span>
+      </div>
+    </div>
+    <div class="header-right">
+      完成 ▼
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <%- htmlContent %>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      <div class="page-number">6</div>
+      <div class="copyright">
+        新領域 版權所有 不得翻印<br>
+        大雅圖書出版有限公司版權印記
+      </div>
+    </div>
+    <div class="footer-right">
+      ISBN 978-988-8149-59-9<br>
+      © 新領域
+    </div>
+  </div>
+
+  <script>
+    // Ensure Paged.js initializes
+    if (typeof PagedPolyfill !== 'undefined') {
+      window.addEventListener('load', () => {
+        console.log('Paged.js initialized');
+      });
+    }
+  </script>
+</body>
+</html>
+

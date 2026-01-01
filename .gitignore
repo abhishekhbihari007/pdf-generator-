@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.log
+.DS_Store
+*.pdf
+.vscode/
+.idea/
+worksheets.db
+*.db
+*.sqlite
+*.sqlite3
+

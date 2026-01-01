@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= worksheet ? 'Edit' : 'Create' %> Worksheet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1em;
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    textarea {
+      min-height: 400px;
+      font-family: 'Courier New', monospace;
+    }
+    .header-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .help-text {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+    }
+    .html-examples {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+    .html-examples h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .html-examples code {
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><%= worksheet ? 'Edit' : 'Create' %> Worksheet</h1>
+    
+    <form id="worksheetForm">
+      <input type="hidden" name="id" value="<%= worksheet ? worksheet.id : '' %>">
+      
+      <div class="form-group">
+        <label for="title">Worksheet Title *</label>
+        <input type="text" id="title" name="title" required 
+               value="<%= worksheet ? worksheet.title : '' %>"
+               placeholder="e.g., Unit 4: Narrative Elements">
+      </div>
+
+      <div class="form-group">
+        <label>Header Information</label>
+        <div class="header-fields">
+          <div>
+            <label for="schoolName">School Name</label>
+            <input type="text" id="schoolName" name="schoolName" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).schoolName : worksheet.header_info.schoolName) : '聖公會基顯小學' %>">
+          </div>
+          <div>
+            <label for="className">Class Name</label>
+            <input type="text" id="className" name="className" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).className : worksheet.header_info.className) : '1B' %>">
+          </div>
+          <div>
+            <label for="worksheetId">Worksheet ID</label>
+            <input type="text" id="worksheetId" name="worksheetId" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).worksheetId : worksheet.header_info.worksheetId) : '3a' %>">
+          </div>
+        </div>
+        <div class="header-fields" style="margin-top: 15px;">
+          <div>
+            <label for="date">Date</label>
+            <input type="text" id="date" name="date" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).date : worksheet.header_info.date) : '' %>">
+          </div>
+          <div>
+            <label for="score">Score</label>
+            <input type="text" id="score" name="score" 
+                   value="<%= worksheet && worksheet.header_info ? (typeof worksheet.header_info === 'string' ? JSON.parse(worksheet.header_info).score : worksheet.header_info.score) : '' %>">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="html_content">HTML Content *</label>
+        <textarea id="html_content" name="html_content" required placeholder="Enter HTML content here..."><%= worksheet ? worksheet.html_content : '' %></textarea>
+        <div class="help-text">Use HTML with the provided CSS classes: .learning-focus, .exercise-grid, .fill-in-blank</div>
+      </div>
+
+      <div class="html-examples">
+        <h3>HTML Examples:</h3>
+        <p><strong>Learning Focus Box:</strong></p>
+        <pre><code>&lt;div class="learning-focus"&gt;
+  &lt;h3&gt;4 記敍四要素&lt;/h3&gt;
+  &lt;ul&gt;
+    &lt;li&gt;注意:記敘四要素不一定會全部出現於同一個句子內。&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
+        
+        <p><strong>Exercise Grid (2x2):</strong></p>
+        <pre><code>&lt;div class="exercise-grid"&gt;
+  &lt;div class="exercise-grid-item"&gt;
+    &lt;span class="exercise-grid-label"&gt;a. 時&lt;/span&gt;
+    &lt;span class="fill-in-blank"&gt;今天&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="exercise-grid-item"&gt;
+    &lt;span class="exercise-grid-label"&gt;b. 地&lt;/span&gt;
+    &lt;span class="fill-in-blank"&gt;日本&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="exercise-grid-item"&gt;
+    &lt;span class="exercise-grid-label"&gt;c. 人&lt;/span&gt;
+    &lt;span class="fill-in-blank"&gt;哥哥&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="exercise-grid-item"&gt;
+    &lt;span class="exercise-grid-label"&gt;d. 事&lt;/span&gt;
+    &lt;span class="fill-in-blank"&gt;旅行&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">Save Worksheet</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('worksheetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const headerInfo = {
+        schoolName: document.getElementById('schoolName').value,
+        className: document.getElementById('className').value,
+        worksheetId: document.getElementById('worksheetId').value,
+        date: document.getElementById('date').value,
+        score: document.getElementById('score').value
+      };
+      
+      const data = {
+        id: formData.get('id') || null,
+        title: formData.get('title'),
+        header_info: headerInfo,
+        html_content: formData.get('html_content')
+      };
+      
+      try {
+        const response = await fetch('/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+          alert('Worksheet saved successfully!');
+          window.location.href = '/';
+        } else {
+          alert('Error saving worksheet: ' + result.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving worksheet');
+      }
+    });
+  </script>
+</body>
+</html>
+
