@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "SKIP_PUPPETEER_DOWNLOAD": "true"
+    "SKIP_PUPPETEER_DOWNLOAD": "1"
   }
 }
 
